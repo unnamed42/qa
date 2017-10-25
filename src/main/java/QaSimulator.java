@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
@@ -37,16 +38,18 @@ public class QaSimulator {
     private final static Pattern USER_ID_PATTERN = Pattern.compile("cal.data.userId='(\\d+)'");
     private final static Pattern DATE_PATTERN = Pattern.compile("(\\d+)-(\\d+)-(\\d+)");
 
+
     private String userName;
     private String passWord;
     private String jsessionId;
     private String userId;
     private String eventId;
     private CloseableHttpClient httpClient;
-    private BasicCookieStore cookieStore;
 
+    private BasicCookieStore cookieStore = new BasicCookieStore();
+    private boolean ifLogin;
 
-    public QaSimulator(String un, String pw) {
+    QaSimulator(String un, String pw) {
         userName = un;
         passWord = pw;
     }
@@ -54,16 +57,16 @@ public class QaSimulator {
     public static void main(String[] args) throws IOException {
         QaSimulator qaSimulator = new QaSimulator("M201773011", "hu19960207");
         if (qaSimulator.login()) {
-            qaSimulator.deleteEvent("234931");
+            qaSimulator.deleteEvent("234934");
         }
     }
 
+    boolean isIfLogin() {
+        return ifLogin;
+    }
 
-    public boolean login() throws IOException {
-        //register cookie
-        cookieStore = new BasicCookieStore();
+    boolean login() throws IOException {
         httpClient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
-
 
         String loginUrl = "http://grid.hust.edu.cn/qa/login.action";
         HttpUriRequest loginActionRequest = RequestBuilder.post().setUri(loginUrl)
@@ -78,6 +81,7 @@ public class QaSimulator {
             loginActionResponse = httpClient.execute(loginActionRequest);
             if (loginActionResponse.getStatusLine().getStatusCode() != STATUS_JUMP) {
                 System.err.println("login: 用户名或密码错误，登陆失败  error code: " + loginActionResponse.getStatusLine().getStatusCode());
+                ifLogin = false;
                 return false;
             }
             Matcher jsessionIdMatcher = JSESSION_ID_PATTERN.matcher(loginActionResponse.getFirstHeader("Location").toString());
@@ -85,6 +89,7 @@ public class QaSimulator {
                 jsessionId = jsessionIdMatcher.group(1);
             } else {
                 System.err.println("login: jsessionId not exist");
+                ifLogin = false;
                 return false;
             }
 
@@ -98,13 +103,14 @@ public class QaSimulator {
 
         try {
             if (null == jsessionId) {
+                ifLogin = false;
                 return false;
             }
             String mainActionUrl = "http://grid.hust.edu.cn/qa/main.action";
-            HttpUriRequest mainActionRequest = RequestBuilder.get(mainActionUrl).build();
+            HttpUriRequest mainActionRequest = RequestBuilder.get(mainActionUrl).setCharset(Charset.forName("UTF-8")).build();
             mainActionResponse = httpClient.execute(mainActionRequest);
             if (mainActionResponse.getStatusLine().getStatusCode() != STATUS_OK) {
-
+                ifLogin = false;
                 return false;
             }
             Matcher userIdMatcher = USER_ID_PATTERN.matcher(EntityUtils.toString(mainActionResponse.getEntity()));
@@ -112,6 +118,7 @@ public class QaSimulator {
                 userId = userIdMatcher.group(1);
             } else {
                 System.err.println("login: useId is not exist");
+                ifLogin = false;
                 return false;
             }
             EntityUtils.consume(mainActionResponse.getEntity());
@@ -122,10 +129,11 @@ public class QaSimulator {
                 mainActionResponse.close();
             }
         }
+        ifLogin = true;
         return true;
     }
 
-    public boolean generateEventId(String title, String content) throws IOException {
+    private boolean generateEventId(String title, String content) throws IOException {
         if ("".equals(title) || "".equals(content)) {
             System.err.println("addEvent: title or content can't be empty!");
             return false;
@@ -166,17 +174,16 @@ public class QaSimulator {
         return true;
     }
 
-    public boolean addEvent(String title, String date, String content) throws IOException {
+    boolean addEvent(String title, String date, String content) throws IOException {
         if (!generateEventId(title, content)) {
             System.err.println("GenerateEventID failed");
             return false;
         }
-        generateEventId(title, content);
         updateEvent(title, date, content, eventId);
         return true;
     }
 
-    public boolean updateEvent(String title, String date, String content, String eventId) throws IOException {
+    boolean updateEvent(String title, String date, String content, String eventId) throws IOException {
         if (Objects.equals(title, "") || Objects.equals(content, "")) {
             System.err.println("updateEvent: title or content can't be empty!");
             return false;
@@ -187,7 +194,7 @@ public class QaSimulator {
         }
         CloseableHttpResponse updateEventResponse = null;
         String updateEventUrl = "http://grid.hust.edu.cn/qa/updateEvent.action";
-        HttpUriRequest updateEventActionRequest = RequestBuilder.post(updateEventUrl)
+        HttpUriRequest updateEventActionRequest = RequestBuilder.post(updateEventUrl).setCharset(Charset.forName("UTF-8"))
                 .addHeader("Content-Type", "application/x-www-form-urlencoded")
                 .addParameter("event.title", title)
                 .addParameter("event.start", date)
@@ -218,7 +225,7 @@ public class QaSimulator {
 
     }
 
-    public boolean deleteEvent(String eventId) throws IOException {
+    boolean deleteEvent(String eventId) throws IOException {
         CloseableHttpResponse deleteEventResponse = null;
         String deleteEventUrl = "http://grid.hust.edu.cn/qa/deleteEvent.action";
         HttpUriRequest deleteEventActionRequest = RequestBuilder.get(deleteEventUrl)
@@ -240,14 +247,14 @@ public class QaSimulator {
         return true;
     }
 
-    public boolean getEventIdList(String startDate, String endDate) throws IOException {
+    Object[][] getEventIdList(String startDate, String endDate) throws IOException {
         if (!(checkDateIfLegal(startDate) && checkDateIfLegal(endDate))) {
             System.out.println("getEventIdList: startDate or endDate is illegal");
-            return false;
+            return null;
         }
         if (startDate.compareTo(endDate) > 0) {
             System.err.println("getEventIdList: startDate less than endDate");
-            return false;
+            return null;
         }
         CloseableHttpResponse eventListResponse = null;
         String eventListUrl = "http://grid.hust.edu.cn/qa/eventList.action";
@@ -256,15 +263,20 @@ public class QaSimulator {
                 .addParameter("startDate", startDate)
                 .addParameter("endDate", endDate)
                 .build();
+        Object[][] rawData = null;
         try {
             eventListResponse = httpClient.execute(eventListActionRequest);
             if (eventListResponse.getStatusLine().getStatusCode() != STATUS_OK) {
                 System.err.println("eventListAction failed code: " + eventListResponse.getStatusLine());
-                return false;
+                return null;
             } else {
                 JSONObject eventList = new JSONObject(EntityUtils.toString(eventListResponse.getEntity()));
                 JSONArray eventJsonArray = new JSONArray(eventList.get("events").toString());
                 System.out.println(eventList.get("events").toString());
+                if (eventJsonArray.length() > 0) {
+                    rawData = new Object[eventJsonArray.length()][3];
+                }
+                int i = 0;
                 for (Object event : eventJsonArray) {
                     JSONObject eventJsonObject = (JSONObject) event;
                     System.out.printf("event_id\tdate\ttitle\tcontent\n");
@@ -272,6 +284,13 @@ public class QaSimulator {
                             eventJsonObject.getString("start").split("T")[0],
                             eventJsonObject.getString("title"),
                             eventJsonObject.getString("description"));
+
+                    if (rawData != null) {
+                        rawData[i][0] = eventJsonObject.get("id");
+                        rawData[i][1] = eventJsonObject.getString("title");
+                        rawData[i][2] = eventJsonObject.getString("description");
+                    }
+                    i++;
                 }
             }
         } catch (IOException e) {
@@ -281,10 +300,10 @@ public class QaSimulator {
                 eventListResponse.close();
             }
         }
-        return true;
+        return rawData;
     }
 
-    public boolean checkDateIfLegal(String date) {
+    private boolean checkDateIfLegal(String date) {
         Matcher dateMatcher = DATE_PATTERN.matcher(date);
         int dateGroupCountUpperBound = 3;
         if (dateMatcher.matches()) {
@@ -306,12 +325,11 @@ public class QaSimulator {
         return true;
     }
 
-    public boolean closeHttpClient() throws IOException {
+    void closeHttpClient() throws IOException {
         if (httpClient != null) {
             httpClient.close();
-            return true;
+
         }
-        return true;
     }
 
 }
