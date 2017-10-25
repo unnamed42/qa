@@ -369,7 +369,7 @@ public class QaUserInterface {
                             if (infoDefaultModel != null) {
                                 for (int row = 0; row < rawData.length; row++) {
                                     for (int column = 0; column < columnNames.length; column++) {
-                                        if (row >= originData.length) {
+                                        if (row >= infoDefaultModel.getRowCount()) {
                                             infoDefaultModel.addRow(new Object[]{});
                                         }
                                         infoDefaultModel.setValueAt(rawData[row][column], row, column);
