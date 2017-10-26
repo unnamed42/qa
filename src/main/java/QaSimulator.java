@@ -179,7 +179,11 @@ public class QaSimulator {
             System.err.println("GenerateEventID failed");
             return false;
         }
-        updateEvent(title, date, content, eventId);
+        if (!updateEvent(title, date, content, eventId)) {
+            System.err.println("add failed while invoking update action");
+            return false;
+        }
+
         return true;
     }
 
@@ -250,11 +254,11 @@ public class QaSimulator {
     Object[][] getEventIdList(String startDate, String endDate) throws IOException {
         if (!(checkDateIfLegal(startDate) && checkDateIfLegal(endDate))) {
             System.out.println("getEventIdList: startDate or endDate is illegal");
-            return null;
+            return new Object[][]{};
         }
         if (startDate.compareTo(endDate) > 0) {
             System.err.println("getEventIdList: startDate less than endDate");
-            return null;
+            return new Object[][]{};
         }
         CloseableHttpResponse eventListResponse = null;
         String eventListUrl = "http://grid.hust.edu.cn/qa/eventList.action";
@@ -268,14 +272,13 @@ public class QaSimulator {
             eventListResponse = httpClient.execute(eventListActionRequest);
             if (eventListResponse.getStatusLine().getStatusCode() != STATUS_OK) {
                 System.err.println("eventListAction failed code: " + eventListResponse.getStatusLine());
-                return null;
+                return new Object[][]{};
             } else {
                 JSONObject eventList = new JSONObject(EntityUtils.toString(eventListResponse.getEntity()));
                 JSONArray eventJsonArray = new JSONArray(eventList.get("events").toString());
                 System.out.println(eventList.get("events").toString());
-                if (eventJsonArray.length() > 0) {
-                    rawData = new Object[eventJsonArray.length()][3];
-                }
+                rawData = new Object[eventJsonArray.length()][3];
+
                 int i = 0;
                 for (Object event : eventJsonArray) {
                     JSONObject eventJsonObject = (JSONObject) event;
@@ -285,11 +288,9 @@ public class QaSimulator {
                             eventJsonObject.getString("title"),
                             eventJsonObject.getString("description"));
 
-                    if (rawData != null) {
-                        rawData[i][0] = eventJsonObject.get("id");
-                        rawData[i][1] = eventJsonObject.getString("title");
-                        rawData[i][2] = eventJsonObject.getString("description");
-                    }
+                    rawData[i][0] = eventJsonObject.get("id");
+                    rawData[i][1] = eventJsonObject.getString("title");
+                    rawData[i][2] = eventJsonObject.getString("description");
                     i++;
                 }
             }

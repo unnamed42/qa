@@ -1,10 +1,17 @@
 import com.eltima.components.ui.DatePicker;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.Document;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * create with PACKAGE_NAME
@@ -14,6 +21,9 @@ import java.io.IOException;
  */
 public class QaUserInterface {
     private final Object[] columnNames = {"eventId", "title", "content"};
+    Document document;
+    String preDateStr = "";
+    String nextDateStr = "";
     private DatePicker datePickerField;
     private JTextField titleJTextField;
     private JTextArea contentJTextArea;
@@ -33,7 +43,6 @@ public class QaUserInterface {
             {"", "", ""},
             {"", "", ""}
     };
-
 
     public static void main(String[] args) {
         QaUserInterface qaUserInterface = new QaUserInterface();
@@ -113,7 +122,7 @@ public class QaUserInterface {
         infoJTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if ((e.getModifiers() & InputEvent.BUTTON3_MASK) != 0) {
+                if ((e.getButton() == MouseEvent.BUTTON3)) {
                     if (qaSimulator != null && qaSimulator.isIfLogin()) {
                         jPopupMenu.show(infoJTable, e.getX(), e.getY());
                     } else {
@@ -127,6 +136,27 @@ public class QaUserInterface {
 
     }
 
+    private boolean checkDateLegal() throws ParseException {
+        if ("".equals(datePickerField.getText())) {
+            JOptionPane.showMessageDialog(null, "请先输入日期",
+                    "未输入日期", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        String currentDay = format.format(new Date());
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());
+        if (c.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
+                || c.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY
+                || datePickerField.getText().equals(currentDay)) {
+            return true;
+        } else {
+            JOptionPane.showMessageDialog(null, "不是周六周末也不是当前日期，不能操作的亲！",
+                    "非法日期", JOptionPane.ERROR_MESSAGE);
+        }
+        return false;
+    }
+
     private void addPopMenu2JTable() {
         jPopupMenu = new JPopupMenu();
         JMenuItem deleteMenuItem = new JMenuItem("删除");
@@ -135,47 +165,57 @@ public class QaUserInterface {
         jPopupMenu.add(updateMenuItem);
         deleteMenuItem.addActionListener(e -> {
             int[] selectedRows = infoJTable.getSelectedRows();
-            boolean[] deleteCount = new boolean[selectedRows.length];
-            for (int i = 0; i < selectedRows.length; i++) {
-                System.out.println("选中的行数：" + selectedRows[i]);
+            StringBuilder deleteFailedInfo = new StringBuilder();
+            StringBuilder deleteSuccessInfo = new StringBuilder();
+            for (int selectedRow : selectedRows) {
+                System.out.println("选中的行数：" + selectedRow);
                 try {
-                    deleteCount[i] = qaSimulator.deleteEvent(infoDefaultModel.getValueAt(selectedRows[i], 0)
-                            .toString());
-                    if (!deleteCount[i]) {
-                        JOptionPane.showMessageDialog(null, "eventId:" +
-                                        infoDefaultModel.getValueAt(selectedRows[i], 0).toString() + "删除失败",
-                                "删除失败", JOptionPane.ERROR_MESSAGE);
+                    String eventId = infoDefaultModel.getValueAt(selectedRow, 0).toString();
+                    if (!qaSimulator.deleteEvent(eventId)) {
+                        deleteFailedInfo.append(" eventId: ").append(eventId).append(" 删除失败; ");
+                    } else {
+                        deleteSuccessInfo.append(" eventId: ").append(eventId).append(" 删除成功; ");
                     }
-
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
             }
-            for (int i = 0; i < deleteCount.length; i++) {
-                if (deleteCount[i]) {
-                    infoDefaultModel.removeRow(selectedRows[i]);
-                }
-            }
+            refreshJTable();
+            JOptionPane.showMessageDialog(null,
+                    deleteSuccessInfo.toString() + deleteFailedInfo.toString(),
+                    "删除信息", JOptionPane.INFORMATION_MESSAGE);
+
         });
         updateMenuItem.addActionListener(e -> {
-            int[] selectedRows = infoJTable.getSelectedRows();
-            boolean[] updateCount = new boolean[selectedRows.length];
-            for (int i = 0; i < selectedRows.length; i++) {
-                System.out.println("选中的行数：" + selectedRows[i]);
-                try {
-                    String eventId = infoDefaultModel.getValueAt(selectedRows[i], 0).toString();
-                    String title = infoDefaultModel.getValueAt(selectedRows[i], 1).toString();
-                    String content = infoDefaultModel.getValueAt(selectedRows[i], 2).toString();
-                    String date = datePickerField.getText();
-                    updateCount[i] = qaSimulator.updateEvent(title, date, content, eventId);
-                    if (!updateCount[i]) {
-                        JOptionPane.showMessageDialog(null, "eventId:" +
-                                        infoDefaultModel.getValueAt(selectedRows[i], 0).toString() + "更新失败",
-                                "更新失败", JOptionPane.ERROR_MESSAGE);
+            try {
+                if (checkDateLegal()) {
+                    int[] selectedRows = infoJTable.getSelectedRows();
+                    StringBuilder updateFailedStr = new StringBuilder();
+                    StringBuilder updateSuccessStr = new StringBuilder();
+                    for (int selectedRow : selectedRows) {
+                        System.out.println("选中的行数：" + selectedRow);
+                        try {
+                            String eventId = infoDefaultModel.getValueAt(selectedRow, 0).toString();
+                            String title = infoDefaultModel.getValueAt(selectedRow, 1).toString();
+                            String content = infoDefaultModel.getValueAt(selectedRow, 2).toString();
+                            String date = datePickerField.getText();
+                            if (!qaSimulator.updateEvent(title, date, content, eventId)) {
+                                updateFailedStr.append(" eventId ").append(eventId).append(" update failed ");
+                            } else {
+                                updateSuccessStr.append(" eventId ").append(eventId).append(" update success; ");
+                            }
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
                     }
-                } catch (IOException e1) {
-                    e1.printStackTrace();
+                    refreshJTable();
+                    JOptionPane.showMessageDialog(null,
+                            updateSuccessStr.toString() + updateFailedStr.toString(),
+                            "更新信息", JOptionPane.INFORMATION_MESSAGE);
+
                 }
+            } catch (ParseException e1) {
+                e1.printStackTrace();
             }
         });
     }
@@ -185,8 +225,41 @@ public class QaUserInterface {
         leftSideJpanel.setLayout(new GridLayout(5, 1));
         JPanel dateLabelAndTextFieldJPanel = new JPanel(new FlowLayout());
         JLabel dateLabel = new JLabel("日期");
-        datePickerField = new DatePicker(null, "yyyy-MM-dd",
+        datePickerField = new DatePicker(new Date(), "yyyy-MM-dd",
                 new Font("Times New Roman", Font.BOLD, 14), new Dimension(200, 30));
+        document = datePickerField.getInnerTextField().getDocument();
+        document.addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+
+                boolean isInit = "".equals(preDateStr) && "".equals(nextDateStr);
+                boolean isLogin = qaSimulator == null || !qaSimulator.isIfLogin();
+                if (isLogin) {
+                    System.out.println("登陆前赋值" + (preDateStr = datePickerField.getText()));
+                    preDateStr = datePickerField.getText();
+                } else {
+                    nextDateStr = datePickerField.getText();
+                    if (preDateStr.equals(nextDateStr)) {
+                        System.out.println("登陆后: " + nextDateStr);
+                    } else {
+                        preDateStr = nextDateStr;
+                        System.out.println("刷新！");
+                        refreshJTable();
+                    }
+                }
+            }
+
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+
+            }
+        });
         dateLabelAndTextFieldJPanel.add(dateLabel);
         dateLabelAndTextFieldJPanel.add(datePickerField);
         loginJButton = new JButton("登陆");
@@ -256,6 +329,46 @@ public class QaUserInterface {
         }
     }
 
+    private void refreshJTable() {
+        if (qaSimulator != null && qaSimulator.isIfLogin()) {
+            String date = datePickerField.getText();
+            try {
+                Object[][] rawData = qaSimulator.getEventIdList(date, date);
+                if (rawData.length == 0) {
+                    JOptionPane.showMessageDialog(null, date + "event为空，或者获取失败",
+                            "event为空", JOptionPane.ERROR_MESSAGE);
+                }
+                int deleteCount = infoDefaultModel.getRowCount() - rawData.length;
+                while (deleteCount > 0) {
+                    infoDefaultModel.removeRow(infoDefaultModel.getRowCount() - 1);
+                    deleteCount--;
+                }
+                for (int row = 0; row < infoJTable.getRowCount(); row++) {
+                    for (int column = 0; column < columnNames.length; column++) {
+                        infoDefaultModel.setValueAt("", row, column);
+                    }
+                }
+                if (infoDefaultModel != null) {
+                    for (int row = 0; row < rawData.length; row++) {
+                        for (int column = 0; column < columnNames.length; column++) {
+                            if (row >= infoDefaultModel.getRowCount()) {
+                                infoDefaultModel.addRow(new Object[]{});
+                            }
+                            infoDefaultModel.setValueAt(rawData[row][column], row, column);
+                        }
+                    }
+                }
+
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+
+        } else {
+            JOptionPane.showMessageDialog(null, "您还未登陆,请先登陆",
+                    "未登陆", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     class ButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -266,8 +379,8 @@ public class QaUserInterface {
                 loginJFrame.setLocationRelativeTo(null);
                 loginJFrame.setSize(300, 400);
                 loginJFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-                JLabel userNameLabel = new JLabel("userName");
-                JLabel passWordLabel = new JLabel("passWord");
+                JLabel userNameLabel = new JLabel("用户名");
+                JLabel passWordLabel = new JLabel("密码");
                 JTextField userNameJTextField = new JTextField(20);
                 JPasswordField passwordJPasswordField = new JPasswordField(20);
                 JButton loginJButton = new JButton("登陆");
@@ -280,6 +393,7 @@ public class QaUserInterface {
                         if (qaSimulator.isIfLogin()) {
                             JOptionPane.showMessageDialog(null, "登陆成功", "INFORMATION_MESSAGE", JOptionPane.INFORMATION_MESSAGE);
                             loginJFrame.dispose();
+                            refreshJTable();
                         } else {
                             JOptionPane.showMessageDialog(null, "用户名或密码错误", "标题", JOptionPane.ERROR_MESSAGE);
                         }
@@ -289,48 +403,53 @@ public class QaUserInterface {
                 });
 
                 gridBagConstraints.gridy = 1;
-                gridBagConstraints.gridx = 1;
+                gridBagConstraints.gridx = 2;
                 gridBagConstraints.gridwidth = 1;
                 gridBagConstraints.gridheight = 1;
-                gridBagConstraints.weightx = 1;
-                gridBagConstraints.weighty = 1;
+                gridBagConstraints.weightx = 0;
+                gridBagConstraints.weighty = 0;
                 gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+                gridBagConstraints.insets = new Insets(20, 5, 10, 5);
                 loginJFrame.add(userNameLabel, gridBagConstraints);
 
                 gridBagConstraints.gridy = 1;
-                gridBagConstraints.gridx = 3;
-                gridBagConstraints.gridwidth = 2;
+                gridBagConstraints.gridx = 4;
+                gridBagConstraints.gridwidth = 4;
                 gridBagConstraints.gridheight = 1;
                 gridBagConstraints.weightx = 3;
-                gridBagConstraints.weighty = 1;
+                gridBagConstraints.weighty = 0;
+                gridBagConstraints.insets = new Insets(20, 5, 10, 5);
                 gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
                 loginJFrame.add(userNameJTextField, gridBagConstraints);
 
                 gridBagConstraints.gridy = 3;
-                gridBagConstraints.gridx = 1;
+                gridBagConstraints.gridx = 2;
                 gridBagConstraints.gridwidth = 1;
                 gridBagConstraints.gridheight = 1;
-                gridBagConstraints.weightx = 1;
-                gridBagConstraints.weighty = 1;
+                gridBagConstraints.weightx = 0;
+                gridBagConstraints.weighty = 0;
                 gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+                gridBagConstraints.insets = new Insets(20, 5, 10, 5);
                 loginJFrame.add(passWordLabel, gridBagConstraints);
 
                 gridBagConstraints.gridy = 3;
-                gridBagConstraints.gridx = 3;
-                gridBagConstraints.gridwidth = 2;
+                gridBagConstraints.gridx = 4;
+                gridBagConstraints.gridwidth = 4;
                 gridBagConstraints.gridheight = 1;
                 gridBagConstraints.weightx = 3;
-                gridBagConstraints.weighty = 1;
+                gridBagConstraints.weighty = 0;
                 gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+                gridBagConstraints.insets = new Insets(20, 5, 10, 5);
                 loginJFrame.add(passwordJPasswordField, gridBagConstraints);
 
                 gridBagConstraints.gridy = 6;
-                gridBagConstraints.gridx = 1;
+                gridBagConstraints.gridx = 2;
                 gridBagConstraints.gridwidth = 6;
                 gridBagConstraints.gridheight = 2;
                 gridBagConstraints.weightx = 3;
-                gridBagConstraints.weighty = 1;
+                gridBagConstraints.weighty = 0;
                 gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+                gridBagConstraints.insets = new Insets(20, 5, 10, 5);
                 loginJFrame.add(loginJButton, gridBagConstraints);
                 loginJFrame.setVisible(true);
             }
@@ -338,17 +457,19 @@ public class QaUserInterface {
                 if (qaSimulator != null && qaSimulator.isIfLogin()) {
                     String title = titleJTextField.getText();
                     String content = contentJTextArea.getText();
-                    System.out.println("content 中的内容" + content);
                     String date = datePickerField.getText();
                     try {
-                        if (qaSimulator.addEvent(title, date, content)) {
-                            JOptionPane.showMessageDialog(null, "添加成功",
-                                    "添加成功", JOptionPane.INFORMATION_MESSAGE);
-                        } else {
-                            JOptionPane.showMessageDialog(null, "添加失败，检查日期是否正确，以及title 和content是否为空",
-                                    "未登陆", JOptionPane.ERROR_MESSAGE);
+                        if (checkDateLegal()) {
+                            if (qaSimulator.addEvent(title, date, content)) {
+                                refreshJTable();
+                                JOptionPane.showMessageDialog(null, "添加成功",
+                                        "添加成功", JOptionPane.INFORMATION_MESSAGE);
+                            } else {
+                                JOptionPane.showMessageDialog(null, "添加失败，检查日期是否正确，以及title 和content是否为空",
+                                        "未登陆", JOptionPane.ERROR_MESSAGE);
+                            }
                         }
-                    } catch (IOException e1) {
+                    } catch (IOException | ParseException e1) {
                         e1.printStackTrace();
                     }
                 } else {
@@ -357,34 +478,7 @@ public class QaUserInterface {
                 }
             }
             if (e.getSource() == showJButton) {
-                if (qaSimulator != null && qaSimulator.isIfLogin()) {
-                    String date = datePickerField.getText();
-                    try {
-                        Object[][] rawData = qaSimulator.getEventIdList(date, date);
-                        if (rawData != null) {
-                            if (infoDefaultModel != null) {
-                                for (int row = 0; row < rawData.length; row++) {
-                                    for (int column = 0; column < columnNames.length; column++) {
-                                        if (row >= infoDefaultModel.getRowCount()) {
-                                            infoDefaultModel.addRow(new Object[]{});
-                                        }
-                                        infoDefaultModel.setValueAt(rawData[row][column], row, column);
-                                    }
-                                }
-                            }
-                        } else {
-                            JOptionPane.showMessageDialog(null, "sad 没能获取event，或者event为空",
-                                    "获取event失败", JOptionPane.ERROR_MESSAGE);
-                        }
-
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-
-                } else {
-                    JOptionPane.showMessageDialog(null, "您还未登陆,请先登陆",
-                            "未登陆", JOptionPane.ERROR_MESSAGE);
-                }
+                refreshJTable();
             }
 
             if (e.getSource() == deleteJButton) {
