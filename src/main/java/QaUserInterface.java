@@ -1,10 +1,10 @@
+import com.eltima.components.ui.DatePicker;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * create with PACKAGE_NAME
@@ -14,7 +14,7 @@ import java.util.Date;
  */
 public class QaUserInterface {
     private final Object[] columnNames = {"eventId", "title", "content"};
-    private JTextField dateJTextField;
+    private DatePicker datePickerField;
     private JTextField titleJTextField;
     private JTextArea contentJTextArea;
     private JButton loginJButton;
@@ -166,7 +166,7 @@ public class QaUserInterface {
                     String eventId = infoDefaultModel.getValueAt(selectedRows[i], 0).toString();
                     String title = infoDefaultModel.getValueAt(selectedRows[i], 1).toString();
                     String content = infoDefaultModel.getValueAt(selectedRows[i], 2).toString();
-                    String date = dateJTextField.getText();
+                    String date = datePickerField.getText();
                     updateCount[i] = qaSimulator.updateEvent(title, date, content, eventId);
                     if (!updateCount[i]) {
                         JOptionPane.showMessageDialog(null, "eventId:" +
@@ -185,10 +185,10 @@ public class QaUserInterface {
         leftSideJpanel.setLayout(new GridLayout(5, 1));
         JPanel dateLabelAndTextFieldJPanel = new JPanel(new FlowLayout());
         JLabel dateLabel = new JLabel("日期");
-        dateJTextField = new JTextField(15);
-        dateJTextField.setToolTipText("格式：2017-10-24");
+        datePickerField = new DatePicker(null, "yyyy-MM-dd",
+                new Font("Times New Roman", Font.BOLD, 14), new Dimension(200, 30));
         dateLabelAndTextFieldJPanel.add(dateLabel);
-        dateLabelAndTextFieldJPanel.add(dateJTextField);
+        dateLabelAndTextFieldJPanel.add(datePickerField);
         loginJButton = new JButton("登陆");
         addJButton = new JButton("添加");
         showJButton = new JButton("显示");
@@ -280,10 +280,6 @@ public class QaUserInterface {
                         if (qaSimulator.isIfLogin()) {
                             JOptionPane.showMessageDialog(null, "登陆成功", "INFORMATION_MESSAGE", JOptionPane.INFORMATION_MESSAGE);
                             loginJFrame.dispose();
-                            Date dateToday = new Date();
-                            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                            String date = simpleDateFormat.format(dateToday);
-                            dateJTextField.setText(date);
                         } else {
                             JOptionPane.showMessageDialog(null, "用户名或密码错误", "标题", JOptionPane.ERROR_MESSAGE);
                         }
@@ -343,7 +339,7 @@ public class QaUserInterface {
                     String title = titleJTextField.getText();
                     String content = contentJTextArea.getText();
                     System.out.println("content 中的内容" + content);
-                    String date = dateJTextField.getText();
+                    String date = datePickerField.getText();
                     try {
                         if (qaSimulator.addEvent(title, date, content)) {
                             JOptionPane.showMessageDialog(null, "添加成功",
@@ -362,7 +358,7 @@ public class QaUserInterface {
             }
             if (e.getSource() == showJButton) {
                 if (qaSimulator != null && qaSimulator.isIfLogin()) {
-                    String date = dateJTextField.getText();
+                    String date = datePickerField.getText();
                     try {
                         Object[][] rawData = qaSimulator.getEventIdList(date, date);
                         if (rawData != null) {

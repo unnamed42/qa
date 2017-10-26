@@ -3,4 +3,8 @@
 /.idea/*
 /gradle/*
 /out/*
+.DS_Store
+*.iml
+*.ipr
+*.iws
 settings.gradle
