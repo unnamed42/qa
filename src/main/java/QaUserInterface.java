@@ -21,9 +21,8 @@ import java.util.Date;
  */
 public class QaUserInterface {
     private final Object[] columnNames = {"eventId", "title", "content"};
-    Document document;
-    String preDateStr = "";
-    String nextDateStr = "";
+    private String preDateStr = "";
+    private String nextDateStr = "";
     private DatePicker datePickerField;
     private JTextField titleJTextField;
     private JTextArea contentJTextArea;
@@ -106,15 +105,9 @@ public class QaUserInterface {
         //必须在构造方法构建JScrollPane才能显示Table
 
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.gridheight = 4;
-        gridBagConstraints.weightx = 1;
-        gridBagConstraints.weighty = 1;
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        setGridBagConstraints(gridBagConstraints, 0, 6, 4, 4,
+                1, 1, GridBagConstraints.BOTH);
         return gridBagConstraints;
-
     }
 
     private void operateOnJTable() {
@@ -227,12 +220,10 @@ public class QaUserInterface {
         JLabel dateLabel = new JLabel("日期");
         datePickerField = new DatePicker(new Date(), "yyyy-MM-dd",
                 new Font("Times New Roman", Font.BOLD, 14), new Dimension(200, 30));
-        document = datePickerField.getInnerTextField().getDocument();
+        Document document = datePickerField.getInnerTextField().getDocument();
         document.addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-
-                boolean isInit = "".equals(preDateStr) && "".equals(nextDateStr);
                 boolean isLogin = qaSimulator == null || !qaSimulator.isIfLogin();
                 if (isLogin) {
                     System.out.println("登陆前赋值" + (preDateStr = datePickerField.getText()));
@@ -272,13 +263,8 @@ public class QaUserInterface {
         leftSideJpanel.add(showJButton);
         leftSideJpanel.add(deleteJButton);
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 1;
-        gridBagConstraints.gridheight = 5;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.weighty = 1;
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        setGridBagConstraints(gridBagConstraints, 0, 0, 1,
+                5, 0.5, 1, GridBagConstraints.BOTH);
         return gridBagConstraints;
     }
 
@@ -292,32 +278,21 @@ public class QaUserInterface {
         contentJTextArea = new JTextArea(5, 30);
         contentJTextArea.setToolTipText("输入具体内容");
         JScrollPane jScrollPane = new JScrollPane(contentJTextArea);
-        rightJPanelGridBagConstraints.gridx = 0;
-        rightJPanelGridBagConstraints.gridy = 0;
-        rightJPanelGridBagConstraints.gridheight = 1;
-        rightJPanelGridBagConstraints.gridwidth = 5;
-        rightJPanelGridBagConstraints.weightx = 1;
-        rightJPanelGridBagConstraints.weighty = 0.5;
-        rightJPanelGridBagConstraints.insets = new Insets(10, 10, 10, 10);
-        rightJPanelGridBagConstraints.fill = GridBagConstraints.BOTH;
+
+        setGridBagConstraints(rightJPanelGridBagConstraints, 0, 0, 5,
+                1, 1, 0.5, GridBagConstraints.BOTH,
+                new Insets(10, 10, 10, 10));
         rightSideJpanel.add(titleJTextField, rightJPanelGridBagConstraints);
-        rightJPanelGridBagConstraints.gridx = 0;
-        rightJPanelGridBagConstraints.gridy = 1;
-        rightJPanelGridBagConstraints.gridheight = 4;
-        rightJPanelGridBagConstraints.gridwidth = 5;
-        rightJPanelGridBagConstraints.weightx = 1;
-        rightJPanelGridBagConstraints.weighty = 1.5;
-        rightJPanelGridBagConstraints.fill = GridBagConstraints.BOTH;
-        rightJPanelGridBagConstraints.insets = new Insets(10, 10, 10, 10);
+
+        setGridBagConstraints(rightJPanelGridBagConstraints, 2, 1, 5,
+                4, 1, 1.5, GridBagConstraints.BOTH,
+                new Insets(10, 10, 10, 10));
         rightSideJpanel.add(jScrollPane, rightJPanelGridBagConstraints);
+
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.gridheight = 5;
-        gridBagConstraints.weightx = 1;
-        gridBagConstraints.weighty = 1;
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        setGridBagConstraints(gridBagConstraints, 1, 0, 3,
+                5, 1, 1, GridBagConstraints.BOTH);
+
         return gridBagConstraints;
 
     }
@@ -369,6 +344,31 @@ public class QaUserInterface {
         }
     }
 
+    private void setGridBagConstraints(GridBagConstraints gridBagConstraints, int gridx, int gridy, int gridwidth, int gridheight, double weightx, double weighty) {
+        if (gridBagConstraints != null) {
+            gridBagConstraints.gridx = gridx;
+            gridBagConstraints.gridy = gridy;
+            gridBagConstraints.gridwidth = gridwidth;
+            gridBagConstraints.gridheight = gridheight;
+            gridBagConstraints.weightx = weightx;
+            gridBagConstraints.weighty = weighty;
+        }
+    }
+
+    private void setGridBagConstraints(GridBagConstraints gridBagConstraints, int gridx, int gridy, int gridwidth, int gridheight, double weightx, double weighty, int fill) {
+        if (gridBagConstraints != null) {
+            setGridBagConstraints(gridBagConstraints, gridx, gridy, gridwidth, gridheight, weightx, weighty);
+            gridBagConstraints.fill = fill;
+        }
+    }
+
+    private void setGridBagConstraints(GridBagConstraints gridBagConstraints, int gridx, int gridy, int gridwidth, int gridheight, double weightx, double weighty, int fill, Insets insets) {
+        if (gridBagConstraints != null) {
+            setGridBagConstraints(gridBagConstraints, gridx, gridy, gridwidth, gridheight, weightx, weighty, fill);
+            gridBagConstraints.insets = insets;
+        }
+    }
+
     class ButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -402,55 +402,31 @@ public class QaUserInterface {
                     }
                 });
 
-                gridBagConstraints.gridy = 1;
-                gridBagConstraints.gridx = 2;
-                gridBagConstraints.gridwidth = 1;
-                gridBagConstraints.gridheight = 1;
-                gridBagConstraints.weightx = 0;
-                gridBagConstraints.weighty = 0;
-                gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-                gridBagConstraints.insets = new Insets(20, 5, 10, 5);
+                setGridBagConstraints(gridBagConstraints, 2, 1, 1,
+                        1, 0, 0, GridBagConstraints.HORIZONTAL,
+                        new Insets(20, 5, 10, 5));
                 loginJFrame.add(userNameLabel, gridBagConstraints);
 
-                gridBagConstraints.gridy = 1;
-                gridBagConstraints.gridx = 4;
-                gridBagConstraints.gridwidth = 4;
-                gridBagConstraints.gridheight = 1;
-                gridBagConstraints.weightx = 3;
-                gridBagConstraints.weighty = 0;
-                gridBagConstraints.insets = new Insets(20, 5, 10, 5);
-                gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+                setGridBagConstraints(gridBagConstraints, 4, 1, 4,
+                        1, 3, 0, GridBagConstraints.HORIZONTAL,
+                        new Insets(20, 5, 10, 5));
                 loginJFrame.add(userNameJTextField, gridBagConstraints);
 
-                gridBagConstraints.gridy = 3;
-                gridBagConstraints.gridx = 2;
-                gridBagConstraints.gridwidth = 1;
-                gridBagConstraints.gridheight = 1;
-                gridBagConstraints.weightx = 0;
-                gridBagConstraints.weighty = 0;
-                gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-                gridBagConstraints.insets = new Insets(20, 5, 10, 5);
+                setGridBagConstraints(gridBagConstraints, 2, 3, 1,
+                        1, 0, 0, GridBagConstraints.HORIZONTAL,
+                        new Insets(20, 5, 10, 5));
                 loginJFrame.add(passWordLabel, gridBagConstraints);
 
-                gridBagConstraints.gridy = 3;
-                gridBagConstraints.gridx = 4;
-                gridBagConstraints.gridwidth = 4;
-                gridBagConstraints.gridheight = 1;
-                gridBagConstraints.weightx = 3;
-                gridBagConstraints.weighty = 0;
-                gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-                gridBagConstraints.insets = new Insets(20, 5, 10, 5);
+                setGridBagConstraints(gridBagConstraints, 4, 3, 4,
+                        1, 3, 0, GridBagConstraints.HORIZONTAL,
+                        new Insets(20, 5, 10, 5));
                 loginJFrame.add(passwordJPasswordField, gridBagConstraints);
 
-                gridBagConstraints.gridy = 6;
-                gridBagConstraints.gridx = 2;
-                gridBagConstraints.gridwidth = 6;
-                gridBagConstraints.gridheight = 2;
-                gridBagConstraints.weightx = 3;
-                gridBagConstraints.weighty = 0;
-                gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-                gridBagConstraints.insets = new Insets(20, 5, 10, 5);
+                setGridBagConstraints(gridBagConstraints, 2, 6, 6,
+                        2, 3, 0, GridBagConstraints.HORIZONTAL,
+                        new Insets(20, 5, 10, 5));
                 loginJFrame.add(loginJButton, gridBagConstraints);
+
                 loginJFrame.setVisible(true);
             }
             if (e.getSource() == addJButton) {
