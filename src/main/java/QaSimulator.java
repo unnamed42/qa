@@ -277,7 +277,7 @@ public class QaSimulator {
                 JSONObject eventList = new JSONObject(EntityUtils.toString(eventListResponse.getEntity()));
                 JSONArray eventJsonArray = new JSONArray(eventList.get("events").toString());
                 System.out.println(eventList.get("events").toString());
-                rawData = new Object[eventJsonArray.length()][3];
+                rawData = new Object[eventJsonArray.length()][QaUserInterface.COLUMN_NAMES.length];
 
                 int i = 0;
                 for (Object event : eventJsonArray) {
@@ -288,9 +288,9 @@ public class QaSimulator {
                             eventJsonObject.getString("title"),
                             eventJsonObject.getString("description"));
 
-                    rawData[i][0] = eventJsonObject.get("id");
-                    rawData[i][1] = eventJsonObject.getString("title");
-                    rawData[i][2] = eventJsonObject.getString("description");
+                    rawData[i][QaUserInterface.EVENT_ID_COLUMN_POS] = eventJsonObject.get("id");
+                    rawData[i][QaUserInterface.TITLE_COLUMN_POS] = eventJsonObject.getString("title");
+                    rawData[i][QaUserInterface.CONTENT_COLUMN_POS] = eventJsonObject.getString("description");
                     i++;
                 }
             }

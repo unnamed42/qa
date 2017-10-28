@@ -20,7 +20,10 @@ import java.util.Date;
  * @author husterfox
  */
 public class QaUserInterface {
-    private final Object[] columnNames = {"eventId", "title", "content"};
+    final static Object[] COLUMN_NAMES = {"eventId", "title", "content"};
+    final static int EVENT_ID_COLUMN_POS = 0;
+    final static int TITLE_COLUMN_POS = 1;
+    final static int CONTENT_COLUMN_POS = 2;
     private String preDateStr = "";
     private DatePicker datePickerField;
     private JTextField titleJTextField;
@@ -87,10 +90,10 @@ public class QaUserInterface {
 
     private GridBagConstraints createJscrollPanel() {
 
-        infoDefaultModel = new DefaultTableModel(originData, columnNames) {
+        infoDefaultModel = new DefaultTableModel(originData, COLUMN_NAMES) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column != 0;
+                return column != EVENT_ID_COLUMN_POS;
             }
         };
         infoJTable = new JTable(infoDefaultModel);
@@ -133,9 +136,6 @@ public class QaUserInterface {
         });
 
     }
-
-
-
 
 
     private GridBagConstraints createLeftSideJPanel() {
@@ -193,6 +193,7 @@ public class QaUserInterface {
         return gridBagConstraints;
 
     }
+
     private boolean checkDateLegal() throws ParseException {
         if ("".equals(datePickerField.getText())) {
             JOptionPane.showMessageDialog(null, "请先输入日期",
@@ -213,6 +214,7 @@ public class QaUserInterface {
         }
         return false;
     }
+
     private void clearSource() throws IOException {
         System.out.println("清理资源");
         if (qaSimulator != null) {
@@ -344,13 +346,13 @@ public class QaUserInterface {
                     deleteCount--;
                 }
                 for (int row = 0; row < infoJTable.getRowCount(); row++) {
-                    for (int column = 0; column < columnNames.length; column++) {
+                    for (int column = 0; column < COLUMN_NAMES.length; column++) {
                         infoDefaultModel.setValueAt("", row, column);
                     }
                 }
                 if (infoDefaultModel != null) {
                     for (int row = 0; row < rawData.length; row++) {
-                        for (int column = 0; column < columnNames.length; column++) {
+                        for (int column = 0; column < COLUMN_NAMES.length; column++) {
                             if (row >= infoDefaultModel.getRowCount()) {
                                 infoDefaultModel.addRow(new Object[]{});
                             }
@@ -378,6 +380,20 @@ public class QaUserInterface {
             JOptionPane.showMessageDialog(null, "您还未登陆,请先登陆",
                     "未登陆", JOptionPane.ERROR_MESSAGE);
         }
+
+
+    }
+
+    private String getEventId(DefaultTableModel infoDefaultModel, int row) {
+        return infoDefaultModel.getValueAt(row, EVENT_ID_COLUMN_POS).toString();
+    }
+
+    private String getTitle(DefaultTableModel infoDefaultModel, int row) {
+        return infoDefaultModel.getValueAt(row, TITLE_COLUMN_POS).toString();
+    }
+
+    private String getContent(DefaultTableModel infoDefaultModel, int row) {
+        return infoDefaultModel.getValueAt(row, CONTENT_COLUMN_POS).toString();
     }
 
     class ButtonListener implements ActionListener {
@@ -438,7 +454,7 @@ public class QaUserInterface {
             for (int selectedRow : selectedRows) {
                 System.out.println("选中的行数：" + selectedRow);
                 try {
-                    String eventId = infoDefaultModel.getValueAt(selectedRow, 0).toString();
+                    String eventId = getEventId(infoDefaultModel, selectedRow);
                     if (!qaSimulator.deleteEvent(eventId)) {
                         deleteFailedInfo.append(" eventId: ").append(eventId).append(" 删除失败; ");
                     } else {
@@ -468,9 +484,9 @@ public class QaUserInterface {
                     for (int selectedRow : selectedRows) {
                         System.out.println("选中的行数：" + selectedRow);
                         try {
-                            String eventId = infoDefaultModel.getValueAt(selectedRow, 0).toString();
-                            String title = infoDefaultModel.getValueAt(selectedRow, 1).toString();
-                            String content = infoDefaultModel.getValueAt(selectedRow, 2).toString();
+                            String eventId = getEventId(infoDefaultModel, selectedRow);
+                            String title = getTitle(infoDefaultModel, selectedRow);
+                            String content = getContent(infoDefaultModel, selectedRow);
                             String date = datePickerField.getText();
                             if (!qaSimulator.updateEvent(title, date, content, eventId)) {
                                 updateFailedStr.append(" eventId ").append(eventId).append(" update failed ");
