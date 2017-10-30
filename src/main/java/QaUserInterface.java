@@ -28,7 +28,6 @@ public class QaUserInterface {
     private DatePicker datePickerField;
     private JTextField titleJTextField;
     private JTextArea contentJTextArea;
-    private JFrame mainFrame;
     private JButton loginJButton;
     private JButton addJButton;
     private JButton showJButton;
@@ -59,7 +58,7 @@ public class QaUserInterface {
     }
 
     private void createMainFrame() {
-        mainFrame = new JFrame("QA-beta");
+        JFrame mainFrame = new JFrame("QA-beta");
         mainFrame.setSize(800, 500);
         mainFrame.setLocationRelativeTo(null);
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
