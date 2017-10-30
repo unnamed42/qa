@@ -28,6 +28,7 @@ public class QaUserInterface {
     private DatePicker datePickerField;
     private JTextField titleJTextField;
     private JTextArea contentJTextArea;
+    private JFrame mainFrame;
     private JButton loginJButton;
     private JButton addJButton;
     private JButton showJButton;
@@ -58,7 +59,7 @@ public class QaUserInterface {
     }
 
     private void createMainFrame() {
-        JFrame mainFrame = new JFrame("QA-beta");
+        mainFrame = new JFrame("QA-beta");
         mainFrame.setSize(800, 500);
         mainFrame.setLocationRelativeTo(null);
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -255,6 +256,7 @@ public class QaUserInterface {
         loginJFrame.setLocationRelativeTo(null);
         loginJFrame.setSize(300, 400);
         loginJFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        loginJFrame.setLocationRelativeTo(null);
         JLabel userNameLabel = new JLabel("用户名");
         JLabel passWordLabel = new JLabel("密码");
         JTextField userNameJTextField = new JTextField(20);
@@ -337,8 +339,8 @@ public class QaUserInterface {
             try {
                 Object[][] rawData = qaSimulator.getEventIdList(date, date);
                 if (rawData.length == 0) {
-                    JOptionPane.showMessageDialog(null, date + "event为空，或者获取失败",
-                            "event为空", JOptionPane.ERROR_MESSAGE);
+//                    JOptionPane.showMessageDialog(null, date + "event为空，或者获取失败",
+//                            "event为空", JOptionPane.ERROR_MESSAGE);
                 }
                 int deleteCount = infoDefaultModel.getRowCount() - rawData.length;
                 while (deleteCount > 0) {
