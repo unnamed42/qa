@@ -10,4 +10,5 @@
 /publish/*
 *.tar.gz
 *.sh
+.login*
 settings.gradle

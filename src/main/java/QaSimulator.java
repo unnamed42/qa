@@ -54,12 +54,6 @@ public class QaSimulator {
         passWord = pw;
     }
 
-    public static void main(String[] args) throws IOException {
-        QaSimulator qaSimulator = new QaSimulator("M201773011", "hu19960207");
-        if (qaSimulator.login()) {
-            qaSimulator.deleteEvent("234934");
-        }
-    }
 
     boolean isIfLogin() {
         return ifLogin;
@@ -251,7 +245,7 @@ public class QaSimulator {
         return true;
     }
 
-    Object[][] getEventIdList(String startDate, String endDate) throws IOException {
+    Object[][] getDateContent(String startDate, String endDate) throws IOException {
         if (!(checkDateIfLegal(startDate) && checkDateIfLegal(endDate))) {
             System.out.println("getEventIdList: startDate or endDate is illegal");
             return new Object[][]{};
@@ -291,6 +285,7 @@ public class QaSimulator {
                     rawData[i][QaUserInterface.EVENT_ID_COLUMN_POS] = eventJsonObject.get("id");
                     rawData[i][QaUserInterface.TITLE_COLUMN_POS] = eventJsonObject.getString("title");
                     rawData[i][QaUserInterface.CONTENT_COLUMN_POS] = eventJsonObject.getString("description");
+                    rawData[i][QaUserInterface.DATE_COLUMN_POS] = eventJsonObject.getString("start").split("T")[0];
                     i++;
                 }
             }
