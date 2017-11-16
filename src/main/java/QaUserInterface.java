@@ -298,6 +298,8 @@ public class QaUserInterface {
         JLabel userNameLabel = new JLabel("用户名");
         JLabel passWordLabel = new JLabel("密码");
         JTextField userNameJTextField = new JTextField(20);
+
+        userNameJTextField.requestFocusInWindow();
         JPasswordField passwordJPasswordField = new JPasswordField(20);
         passwordJPasswordField.addKeyListener(new KeyAdapter() {
             @Override
@@ -305,6 +307,40 @@ public class QaUserInterface {
                 if(e.getKeyChar() == KeyEvent.VK_ENTER){
                     loginOperate(loginJFrame, userNameJTextField, passwordJPasswordField);
                 }
+            }
+        });
+        loginJFrame.setFocusTraversalPolicy(new FocusTraversalPolicy() {
+            @Override
+            public Component getComponentAfter(Container aContainer, Component aComponent) {
+                if(aComponent == userNameJTextField){
+                    return passwordJPasswordField;
+                }else{
+                    return userNameJTextField;
+                }
+            }
+
+            @Override
+            public Component getComponentBefore(Container aContainer, Component aComponent) {
+                if(aComponent == userNameJTextField){
+                    return passwordJPasswordField;
+                }else{
+                    return userNameJTextField;
+                }
+            }
+
+            @Override
+            public Component getFirstComponent(Container aContainer) {
+                return userNameJTextField;
+            }
+
+            @Override
+            public Component getLastComponent(Container aContainer) {
+                return passwordJPasswordField;
+            }
+
+            @Override
+            public Component getDefaultComponent(Container aContainer) {
+                return userNameJTextField;
             }
         });
         JButton loginJButton = new JButton("登陆");
