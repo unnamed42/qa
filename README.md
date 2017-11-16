@@ -8,6 +8,16 @@
 - 为了方便用户的使用，我已经把程序在java8下编译好的jar包放在${PROJECT_ROOT}/lib下，名字为qa.jar。在终端切换到lib目录并运行 java -jar qa.jar即可运行
 - 当系统安装了JRE环境时，直接在文件管理界面中双击运行qa.jar即可运行，但是这样操作日志将无法显示在终端。
 
+##2017-11-16更新
+Detailed Description:
+            1. move delete button, and change it to query button, can query
+            multiply dates which user can choose by self
+            2. add auto login fucntion, can remember the least recent login
+            user
+            3. press enter can login now
+            4. after add event success, empty the input textfield
+            5. show the login user name at the Frame title, and show
+            login or not
 ## 使用说明:
 
 ### 登陆
