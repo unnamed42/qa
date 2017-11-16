@@ -10,12 +10,12 @@
 
 ## 2017-11-16更新
 * Detailed Description :
-1. move delete button, and change it to query button, can query multiply dates which user can choose by self
-2. add auto login fucntion, can remember the least recent login user
-3. press enter can login now
-4. after add event success, empty the input textfield
-5. show the login user name at the Frame title, and show login or not
-6. use tab can switch focus between username textfield and password textfield while login
+1. move "delete" button, and change it to query button, can query multiply dates which user can choose by self
+2. add auto login fucntion, can remember the latest recent login user
+3. press "Enter" or press the "登陆" button will trriger login event
+4. if "add event" succeeds, empty the input textfield
+5. show the user name at the Frame Title Bar, and hint login or not
+6. use "Tab" can switch focus between username textfield and password textfield while login
 ## 使用说明:
 
 ### 登陆
