@@ -15,6 +15,7 @@
 3. press enter can login now
 4. after add event success, empty the input textfield
 5. show the login user name at the Frame title, and show login or not
+6. use tab can switch focus between username textfield and password textfield while login
 ## 使用说明:
 
 ### 登陆
