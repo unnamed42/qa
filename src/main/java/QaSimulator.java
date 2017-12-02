@@ -58,7 +58,12 @@ public class QaSimulator {
     boolean isIfLogin() {
         return ifLogin;
     }
-
+    /**
+     * use this method login
+     * the username and the password was delivered by the construct method
+     *@param
+     *@return true: success false: failure
+    */
     boolean login() throws IOException {
         httpClient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
 
@@ -167,7 +172,11 @@ public class QaSimulator {
         }
         return true;
     }
-
+    /**
+     * add event
+     *@param
+     *@return
+    */
     boolean addEvent(String title, String date, String content) throws IOException {
         if (!generateEventId(title, content)) {
             System.err.println("GenerateEventID failed");
@@ -180,7 +189,11 @@ public class QaSimulator {
 
         return true;
     }
-
+    /**
+     * update event
+     *@param
+     *@return
+    */
     boolean updateEvent(String title, String date, String content, String eventId) throws IOException {
         if (Objects.equals(title, "") || Objects.equals(content, "")) {
             System.err.println("updateEvent: title or content can't be empty!");
@@ -222,7 +235,11 @@ public class QaSimulator {
         return true;
 
     }
-
+    /**
+     * delete event
+     *@param
+     *@return
+    */
     boolean deleteEvent(String eventId) throws IOException {
         CloseableHttpResponse deleteEventResponse = null;
         String deleteEventUrl = "http://grid.hust.edu.cn/qa/deleteEvent.action";
@@ -298,7 +315,11 @@ public class QaSimulator {
         }
         return rawData;
     }
-
+    /**
+     * check the current date is saturday or sunday
+     *@param
+     *@return
+    */
     private boolean checkDateIfLegal(String date) {
         Matcher dateMatcher = DATE_PATTERN.matcher(date);
         int dateGroupCountUpperBound = 3;

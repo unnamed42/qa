@@ -15,21 +15,40 @@ import java.util.Date;
 import java.util.Properties;
 
 /**
- * create with PACKAGE_NAME
- * USER: husterfox
- *
+ * This class is used to create user interface
+ * createMainFrame() can be invoked to create interface
  * @author husterfox
  */
 public class QaUserInterface {
+    /**
+     * set table information here
+     * COLUMN_NAMES: contain the table field name
+     * EVENT_ID_COLUMN_POS: index of eventid
+     * TITLE_COLUMN_POS: index of title
+     * CONTENT_COLUMN_POS: index of content
+     * DATE_COLUMN_POS: index of date
+     * you can use "Find Usage" to find the way to use it.
+     **/
     final static Object[] COLUMN_NAMES = {"eventId", "title", "content", "date"};
     final static int EVENT_ID_COLUMN_POS = 0;
     final static int TITLE_COLUMN_POS = 1;
     final static int CONTENT_COLUMN_POS = 2;
     final static int DATE_COLUMN_POS = 3;
+    /**
+     * filename: the file name to store login info
+     * username: represent the field name for account in login info
+     * userpasswd: represent the field name for password in login info
+     **/
     private final String filename = ".login.properties";
     private final String username = "UserName";
     private final String userpasswd = "UserPassWd";
+    /**
+     * preDateStr: to avoid Repeated inquiries the qa info while user has selected the date from the datepicker
+     **/
     private String preDateStr = "";
+    /**
+     * these fields is used to create the user interface
+     **/
     private JFrame mainFrame;
     private DatePicker datePickerField;
     private JTextField titleJTextField;
@@ -44,11 +63,14 @@ public class QaUserInterface {
     private JTable infoJTable;
     private JTable queryJTable;
     private JPopupMenu jPopupMenu;
-    private QaSimulator qaSimulator;
     private DefaultTableModel infoDefaultModel;
     private DefaultTableModel queryDefaultModel;
     private Object[][] originData = {
     };
+    /**
+     * accept a qaSimulator
+    **/
+    private QaSimulator qaSimulator;
 
     public static void main(String[] args) {
         QaUserInterface qaUserInterface = new QaUserInterface();
@@ -63,7 +85,7 @@ public class QaUserInterface {
     }
 
     private void createMainFrame() {
-        mainFrame = new JFrame("QA-beta"+" 未登陆");
+        mainFrame = new JFrame("QA-beta" + " 未登陆");
         mainFrame.setSize(800, 500);
         mainFrame.setLocationRelativeTo(null);
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -71,7 +93,7 @@ public class QaUserInterface {
             @Override
             public void windowClosing(WindowEvent e) {
                 try {
-                    clearSource();
+                    clearResource();
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
@@ -97,7 +119,11 @@ public class QaUserInterface {
             e.printStackTrace();
         }
     }
-
+    /**
+     * create the bottom table
+     *@param
+     *@return
+    */
     private GridBagConstraints createJscrollPanel() {
 
         infoDefaultModel = new DefaultTableModel(originData, COLUMN_NAMES) {
@@ -121,7 +147,11 @@ public class QaUserInterface {
                 1, 1, GridBagConstraints.BOTH);
         return gridBagConstraints;
     }
-
+    /**
+     * add menu item to table
+     *@param
+     *@return
+    */
     private void operateOnJTable() {
         jPopupMenu = new JPopupMenu();
         JMenuItem deleteMenuItem = new JMenuItem("删除");
@@ -147,7 +177,12 @@ public class QaUserInterface {
 
     }
 
-
+    /**
+     * create the left side of user interface
+     * include the functional button and date picker
+     *@param
+     *@return
+    */
     private GridBagConstraints createLeftSideJPanel() {
         leftSideJpanel = new JPanel();
         leftSideJpanel.setLayout(new GridLayout(5, 1));
@@ -174,7 +209,12 @@ public class QaUserInterface {
         return gridBagConstraints;
     }
 
-
+    /**
+     * create the right side of user interface
+     * include the title textfield and content textfield
+     *@param
+     *@return
+    */
     private GridBagConstraints createRightSideJpanel() {
         rightSideJpanel = new JPanel();
         GridBagLayout gridBagLayout = new GridBagLayout();
@@ -203,7 +243,11 @@ public class QaUserInterface {
         return gridBagConstraints;
 
     }
-
+    /**
+     * check if the input date is legal
+     *@param
+     *@return true:legal false: illegal
+    */
     private boolean checkDateLegal() throws ParseException {
         if ("".equals(datePickerField.getText())) {
             JOptionPane.showMessageDialog(null, "请先输入日期",
@@ -224,19 +268,30 @@ public class QaUserInterface {
         }
         return false;
     }
-
-    private void clearSource() throws IOException {
+    /**
+     * clean the resource
+     *@param
+     *@return
+    */
+    private void clearResource() throws IOException {
         System.out.println("清理资源");
         if (qaSimulator != null) {
             qaSimulator.closeHttpClient();
         }
     }
-
+    /**
+     * refresh the table upon the start date and the end date
+     *@param  startDate: start date
+     *@param  endDate: end date
+     *@param  infoDefaultModel: table model to be filled
+     *@param  infoJTable: table to be filled
+     *@return
+    */
     private void fillJTable(String startDate, String endDate, DefaultTableModel infoDefaultModel, JTable infoJTable) {
         try {
             Object[][] rawData = qaSimulator.getDateContent(startDate, endDate);
             if (rawData.length == 0) {
-                System.out.println("startDate： "+startDate+" endDate: "+endDate+" 表格数据为空，或者获取失败");
+                System.out.println("startDate： " + startDate + " endDate: " + endDate + " 表格数据为空，或者获取失败");
             }
             int deleteCount = infoDefaultModel.getRowCount() - rawData.length;
             while (deleteCount > 0) {
@@ -286,7 +341,11 @@ public class QaUserInterface {
             gridBagConstraints.insets = insets;
         }
     }
-
+    /**
+     * deal with the login event
+     *@param
+     *@return
+    */
     private void loginHandle() {
         JFrame loginJFrame = new JFrame("欢迎登陆");
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
@@ -304,7 +363,7 @@ public class QaUserInterface {
         passwordJPasswordField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if(e.getKeyChar() == KeyEvent.VK_ENTER){
+                if (e.getKeyChar() == KeyEvent.VK_ENTER) {
                     loginOperate(loginJFrame, userNameJTextField, passwordJPasswordField);
                 }
             }
@@ -312,18 +371,18 @@ public class QaUserInterface {
         loginJFrame.setFocusTraversalPolicy(new FocusTraversalPolicy() {
             @Override
             public Component getComponentAfter(Container aContainer, Component aComponent) {
-                if(aComponent == userNameJTextField){
+                if (aComponent == userNameJTextField) {
                     return passwordJPasswordField;
-                }else{
+                } else {
                     return userNameJTextField;
                 }
             }
 
             @Override
             public Component getComponentBefore(Container aContainer, Component aComponent) {
-                if(aComponent == userNameJTextField){
+                if (aComponent == userNameJTextField) {
                     return passwordJPasswordField;
-                }else{
+                } else {
                     return userNameJTextField;
                 }
             }
@@ -383,7 +442,7 @@ public class QaUserInterface {
             if (qaSimulator.isIfLogin()) {
                 int operate = JOptionPane.showConfirmDialog(null, "登陆成功.\n是否保存登陆信息到当前目录中，以便下次登陆",
                         "登陆成功", JOptionPane.YES_NO_OPTION);
-                mainFrame.setTitle("QA-beta: 用户 "+userName);
+                mainFrame.setTitle("QA-beta: 用户 " + userName);
                 if (operate == JOptionPane.YES_OPTION) {
                     Properties loginProperties = new Properties();
                     FileOutputStream fileOutputStream = new FileOutputStream(filename, false);
@@ -403,7 +462,11 @@ public class QaUserInterface {
         }
     }
 
-
+    /**
+     * auto login
+     *@param
+     *@return
+    */
     private void autoLogin() throws IOException {
         File loginFile = new File(filename);
         if (loginFile.exists()) {
@@ -420,7 +483,7 @@ public class QaUserInterface {
                         JOptionPane.INFORMATION_MESSAGE);
 
                 showHandle();
-                mainFrame.setTitle("QA-beta: "+ " 用户: " + userName);
+                mainFrame.setTitle("QA-beta: " + " 用户: " + userName);
             } else {
                 JOptionPane.showMessageDialog(null, "login.properties中用户名或密码错误",
                         "登陆失败", JOptionPane.ERROR_MESSAGE);
@@ -431,7 +494,11 @@ public class QaUserInterface {
                     "文件未找到", JOptionPane.INFORMATION_MESSAGE);
         }
     }
-
+    /**
+     * deal with the add event
+     *@param
+     *@return
+    */
     private void addHandle() {
         if (qaSimulator != null && qaSimulator.isIfLogin()) {
             String title = titleJTextField.getText();
@@ -458,7 +525,11 @@ public class QaUserInterface {
                     "未登陆", JOptionPane.ERROR_MESSAGE);
         }
     }
-
+    /**
+     * deal with the show event
+     *@param
+     *@return
+    */
     private void showHandle() {
         if (qaSimulator != null && qaSimulator.isIfLogin()) {
             String date = datePickerField.getText();
