@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  *
  * @author husterfox
  */
-public class QaSimulator {
+class QaSimulator {
     private final static String USERNAME = "username";
     private final static String PASSWORD = "password";
     private final static int STATUS_OK = 200;
@@ -61,7 +61,7 @@ public class QaSimulator {
     /**
      * use this method login
      * the username and the password was delivered by the construct method
-     *@param
+     *
      *@return true: success false: failure
     */
     boolean login() throws IOException {
@@ -174,8 +174,8 @@ public class QaSimulator {
     }
     /**
      * add event
-     *@param
-     *@return
+     *
+     *
     */
     boolean addEvent(String title, String date, String content) throws IOException {
         if (!generateEventId(title, content)) {
@@ -191,8 +191,8 @@ public class QaSimulator {
     }
     /**
      * update event
-     *@param
-     *@return
+     *
+     *
     */
     boolean updateEvent(String title, String date, String content, String eventId) throws IOException {
         if (Objects.equals(title, "") || Objects.equals(content, "")) {
@@ -237,10 +237,14 @@ public class QaSimulator {
     }
     /**
      * delete event
-     *@param
-     *@return
+     *
+     *
     */
     boolean deleteEvent(String eventId) throws IOException {
+        if("".equals(eventId)){
+            System.err.printf("while delete eventID cannot be empty");
+            return false;
+        }
         CloseableHttpResponse deleteEventResponse = null;
         String deleteEventUrl = "http://grid.hust.edu.cn/qa/deleteEvent.action";
         HttpUriRequest deleteEventActionRequest = RequestBuilder.get(deleteEventUrl)
@@ -317,8 +321,8 @@ public class QaSimulator {
     }
     /**
      * check the current date is saturday or sunday
-     *@param
-     *@return
+     *
+     *
     */
     private boolean checkDateIfLegal(String date) {
         Matcher dateMatcher = DATE_PATTERN.matcher(date);
