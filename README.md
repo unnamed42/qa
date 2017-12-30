@@ -8,6 +8,18 @@
 - 为了方便用户的使用，我已经把程序在java8下编译好的jar包放在${PROJECT_ROOT}/lib下，名字为qa.jar。在终端切换到lib目录并运行 java -jar qa.jar即可运行
 - 当系统安装了JRE环境时，直接在文件管理界面中双击运行qa.jar即可运行，但是这样操作日志将无法显示在终端。
 
+## 2017-12-30更新
+* Detailed Description:
+1. 在查询界面中添加了批量添加功能。
+2. 批量查询功能得到加强，这个版本可以显示哪些天QA记录不存在
+3. 查询得到的表格功能增强，用户可右键表格直接对QA进行操作和更新。注意当表格内容
+为空时，填写内容再更新即相当于添加内容
+4. 完善了用户输入判断，当delete事件为空，能检测出来。
+5. For developer: 在Qasimulator的接口函数必须判断参数的正确性，Qainterface
+可判断输入参数也可不判断！
+
+
+
 ## 2017-11-16更新
 * Detailed Description :
 1. move "delete" button, and change it to query button, can query multiply dates which user can choose by self
