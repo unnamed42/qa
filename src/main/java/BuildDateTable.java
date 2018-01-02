@@ -1,3 +1,4 @@
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -7,8 +8,9 @@ import java.util.*;
  */
 public class BuildDateTable {
     public static void main(String[] args) throws ParseException {
-        System.out.println(BuildDateTable.buildDataTable("2017-11-30","2017-12-10"));
+        System.out.println(BuildDateTable.buildDataTable("2017-11-30", "2017-12-10"));
     }
+
     public static List<String> buildDataTable(String startTime, String endTime) throws ParseException {
         int startYear = Integer.valueOf(startTime.split("-")[0]);
         int endYear = Integer.valueOf(endTime.split("-")[0]);
@@ -39,23 +41,50 @@ public class BuildDateTable {
     }
 
     private static List<String> getDatesBetweenTwoDate(Date startTime, Date endTime) {
-        List<String> dateTable = new ArrayList<String>();
+        List<String> dateTable = new ArrayList<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        dateTable.add(sdf.format(startTime));
+        if (!checkWeekends(startTime)) {
+            dateTable.add(sdf.format(startTime));
+        }
         if (!sdf.format(startTime).equals(sdf.format(endTime))) {
             Calendar cal = Calendar.getInstance();
             cal.setTime(startTime);
-            boolean flag = true;
-            while (flag) {
+            while (true) {
                 cal.add(Calendar.DAY_OF_MONTH, 1);
                 if (endTime.after(cal.getTime())) {
-                    dateTable.add(sdf.format(cal.getTime()));
+                    if (!checkWeekends(cal.getTime())) {
+                        dateTable.add(sdf.format(cal.getTime()));
+                    }
                 } else {
                     break;
                 }
             }
-            dateTable.add(sdf.format(endTime));
+            if (!checkWeekends(endTime)) {
+                dateTable.add(sdf.format(endTime));
+            }
         }
         return dateTable;
+    }
+
+    static boolean checkWeekends(String date) {
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar c = Calendar.getInstance();
+        Date nowDate;
+        try {
+            nowDate = format.parse(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return false;
+        }
+        c.setTime(nowDate);
+        int timeScope = c.get(Calendar.DAY_OF_WEEK);
+        return timeScope == Calendar.SUNDAY || timeScope == Calendar.SATURDAY;
+    }
+
+    private static boolean checkWeekends(Date date) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        int timeScope = c.get(Calendar.DAY_OF_WEEK);
+        return timeScope == Calendar.SUNDAY || timeScope == Calendar.SATURDAY;
     }
 }

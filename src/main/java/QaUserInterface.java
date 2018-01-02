@@ -315,9 +315,9 @@ public class QaUserInterface {
             if (rawData.length == 0) {
                 infoDefaultModel.addRow(new Object[]{});
                 for (int column = 0; column < COLUMN_NAMES.length; column++) {
-                    if(column==DATE_COLUMN_POS) {
+                    if (column == DATE_COLUMN_POS) {
                         infoDefaultModel.setValueAt(endDate, 0, column);
-                    }else{
+                    } else {
                         infoDefaultModel.setValueAt("", 0, column);
                     }
                 }
@@ -622,6 +622,8 @@ public class QaUserInterface {
 
     private void queryHandle() {
         if (qaSimulator != null && qaSimulator.isIfLogin()) {
+            final String[] preStartDay = {""};
+            final String[] preEndDay = {""};
             JFrame queryJFrame = new JFrame("欢迎查询");
             GridBagConstraints gridBagConstraints = new GridBagConstraints();
             queryJFrame.setLayout(new GridBagLayout());
@@ -664,9 +666,13 @@ public class QaUserInterface {
                 if (startDate.compareTo(endDate) > 0) {
                     JOptionPane.showMessageDialog(null, "开始日期大于结束日期", "非法日期", JOptionPane.ERROR_MESSAGE);
                 } else {
+                    preStartDay[0] = startDate;
+                    preEndDay[0] = endDate;
                     try {
                         fillQueryJTable(startDate, endDate, queryDefaultModel);
                     } catch (IOException | ParseException e1) {
+                        preStartDay[0] = "";
+                        preEndDay[0] = "";
                         e1.printStackTrace();
                     }
                 }
@@ -686,10 +692,16 @@ public class QaUserInterface {
                     List<String> dateList = BuildDateTable.buildDataTable(startDate, endDate);
                     for (String date : dateList) {
                         if (checkDateLegal(date)) {
-                            qaSimulator.addEvent(titleStr, date, contentStr);
+                            if (!BuildDateTable.checkWeekends(date)) {
+                                qaSimulator.addEvent(titleStr, date, contentStr);
+                            }
                         }
                     }
-                    fillQueryJTable(startDate, endDate, queryDefaultModel);
+                    if ("".equals(preEndDay[0]) && "".equals(preStartDay[0])) {
+                        fillQueryJTable(startDate, endDate, queryDefaultModel);
+                    } else {
+                        fillQueryJTable(preStartDay[0], preEndDay[0], queryDefaultModel);
+                    }
                 } catch (ParseException | IOException e1) {
                     e1.printStackTrace();
                 }
