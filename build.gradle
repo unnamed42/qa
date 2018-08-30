@@ -34,7 +34,6 @@ task fatJar(type: Jar) {
 }
 task release(type: Copy) {
     dependsOn fatJar
-    String baseName = project.name + "-all" + ".jar"
     from('build/libs/') {
         include 'QA-all-1.0.jar'
         rename('QA-all-1.0.jar', 'qa.jar')
