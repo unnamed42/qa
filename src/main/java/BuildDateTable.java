@@ -81,7 +81,7 @@ public class BuildDateTable {
         return timeScope == Calendar.SUNDAY || timeScope == Calendar.SATURDAY;
     }
 
-    private static boolean checkWeekends(Date date) {
+    static boolean checkWeekends(Date date) {
         Calendar c = Calendar.getInstance();
         c.setTime(date);
         int timeScope = c.get(Calendar.DAY_OF_WEEK);
