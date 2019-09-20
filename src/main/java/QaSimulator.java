@@ -45,6 +45,7 @@ class QaSimulator {
     private String userId;
     private String eventId;
     private CloseableHttpClient httpClient;
+    private String httpPrefix = "http://qa.grid.hust.edu.cn/qa/";
 
     private BasicCookieStore cookieStore = new BasicCookieStore();
     private boolean ifLogin;
@@ -58,16 +59,17 @@ class QaSimulator {
     boolean isIfLogin() {
         return ifLogin;
     }
+
     /**
      * use this method login
      * the username and the password was delivered by the construct method
      *
-     *@return true: success false: failure
-    */
+     * @return true: success false: failure
+     */
     boolean login() throws IOException {
         httpClient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
 
-        String loginUrl = "http://grid.hust.edu.cn/qa/login.action";
+        String loginUrl = httpPrefix + "login.action";
         HttpUriRequest loginActionRequest = RequestBuilder.post().setUri(loginUrl)
                 .addParameter(USERNAME, userName).addParameter(PASSWORD, passWord)
                 .addHeader("Content-Type", "application/x-www-form-urlencoded")
@@ -78,7 +80,8 @@ class QaSimulator {
 
         try {
             loginActionResponse = httpClient.execute(loginActionRequest);
-            if (loginActionResponse.getStatusLine().getStatusCode() != STATUS_JUMP) {
+            int id = loginActionResponse.getStatusLine().getStatusCode();
+            if (id != STATUS_JUMP && id != STATUS_OK) {
                 System.err.println("login: 用户名或密码错误，登陆失败  error code: " + loginActionResponse.getStatusLine().getStatusCode());
                 ifLogin = false;
                 return false;
@@ -105,7 +108,7 @@ class QaSimulator {
                 ifLogin = false;
                 return false;
             }
-            String mainActionUrl = "http://grid.hust.edu.cn/qa/main.action";
+            String mainActionUrl = httpPrefix + "main.action";
             HttpUriRequest mainActionRequest = RequestBuilder.get(mainActionUrl).setCharset(Charset.forName("UTF-8")).build();
             mainActionResponse = httpClient.execute(mainActionRequest);
             if (mainActionResponse.getStatusLine().getStatusCode() != STATUS_OK) {
@@ -142,7 +145,7 @@ class QaSimulator {
         String date = simpleDateFormat.format(dateToday);
 
         CloseableHttpResponse addEventResponse = null;
-        String addEventUrl = "http://grid.hust.edu.cn/qa/addEvent.action";
+        String addEventUrl = httpPrefix + "addEvent.action";
         HttpUriRequest addEventActionRequest = RequestBuilder.post(addEventUrl).
                 addHeader("Content-Type", "application/x-www-form-urlencoded")
                 .addParameter("event.title", title)
@@ -172,11 +175,10 @@ class QaSimulator {
         }
         return true;
     }
+
     /**
      * add event
-     *
-     *
-    */
+     */
     boolean addEvent(String title, String date, String content) throws IOException {
         if (!generateEventId(title, content)) {
             System.err.println("GenerateEventID failed");
@@ -189,11 +191,10 @@ class QaSimulator {
 
         return true;
     }
+
     /**
      * update event
-     *
-     *
-    */
+     */
     boolean updateEvent(String title, String date, String content, String eventId) throws IOException {
         if (Objects.equals(title, "") || Objects.equals(content, "")) {
             System.err.println("updateEvent: title or content can't be empty!");
@@ -204,7 +205,7 @@ class QaSimulator {
             return false;
         }
         CloseableHttpResponse updateEventResponse = null;
-        String updateEventUrl = "http://grid.hust.edu.cn/qa/updateEvent.action";
+        String updateEventUrl = httpPrefix + "updateEvent.action";
         HttpUriRequest updateEventActionRequest = RequestBuilder.post(updateEventUrl).setCharset(Charset.forName("UTF-8"))
                 .addHeader("Content-Type", "application/x-www-form-urlencoded")
                 .addParameter("event.title", title)
@@ -235,18 +236,17 @@ class QaSimulator {
         return true;
 
     }
+
     /**
      * delete event
-     *
-     *
-    */
+     */
     boolean deleteEvent(String eventId) throws IOException {
-        if("".equals(eventId)){
+        if ("".equals(eventId)) {
             System.err.printf("while delete eventID cannot be empty");
             return false;
         }
         CloseableHttpResponse deleteEventResponse = null;
-        String deleteEventUrl = "http://grid.hust.edu.cn/qa/deleteEvent.action";
+        String deleteEventUrl = httpPrefix + "deleteEvent.action";
         HttpUriRequest deleteEventActionRequest = RequestBuilder.get(deleteEventUrl)
                 .addParameter("eventId", eventId)
                 .build();
@@ -276,7 +276,7 @@ class QaSimulator {
             return new Object[][]{};
         }
         CloseableHttpResponse eventListResponse = null;
-        String eventListUrl = "http://grid.hust.edu.cn/qa/eventList.action";
+        String eventListUrl = httpPrefix + "eventList.action";
         HttpUriRequest eventListActionRequest = RequestBuilder.get(eventListUrl)
                 .addParameter("userId", userId)
                 .addParameter("startDate", startDate)
@@ -319,11 +319,10 @@ class QaSimulator {
         }
         return rawData;
     }
+
     /**
      * check the current date is saturday or sunday
-     *
-     *
-    */
+     */
     private boolean checkDateIfLegal(String date) {
         Matcher dateMatcher = DATE_PATTERN.matcher(date);
         int dateGroupCountUpperBound = 3;
