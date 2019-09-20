@@ -1,7 +1,6 @@
 /build/*
 /.gradle/*
 /.idea/*
-/gradle/*
 /out/*
 .DS_Store
 *.iml
@@ -11,4 +10,3 @@
 *.tar.gz
 *.sh
 .login*
-settings.gradle
