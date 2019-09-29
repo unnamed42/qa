@@ -2,10 +2,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-/**
- * create with PACKAGE_NAME
- * USER: husterfox
- */
 public class AutoQAEveryDay {
     public static void main(String[] args) {
         if (args.length < 4) {

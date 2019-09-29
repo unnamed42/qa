@@ -13,12 +13,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 
-/**
- * This class is used to create user interface
- * createMainFrame() can be invoked to create interface
- *
- * @author husterfox
- */
 public class QaUserInterface {
     /**
      * set table information here

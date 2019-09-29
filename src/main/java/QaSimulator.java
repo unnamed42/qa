@@ -17,12 +17,6 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * create with PACKAGE_NAME
- * USER: husterfox
- *
- * @author husterfox
- */
 class QaSimulator {
     private final static String USERNAME = "username";
     private final static String PASSWORD = "password";
