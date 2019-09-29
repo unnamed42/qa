@@ -3,9 +3,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-/**
- * @author husterfox, zhangyipeng
- */
 public class BuildDateTable {
     public static void main(String[] args) throws ParseException {
         System.out.println(BuildDateTable.buildDataTable("2017-11-30", "2017-12-10"));
