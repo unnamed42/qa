@@ -10,3 +10,4 @@
 *.tar.gz
 *.sh
 .login*
+target/
