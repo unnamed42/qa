@@ -78,7 +78,7 @@ public class MainFrame extends JFrame {
         val scrollPane = new JScrollPane(this.contentInput);
 
         val titleConstraints = new GBCBuilder().position(0, 0, 5, 1).weight(1, 0.5)
-                .fill(GridBagConstraints.BOTH).insets(new Insets(10, 10, 10, 10)).build();
+                .fill(GridBagConstraints.HORIZONTAL).insets(new Insets(10, 10, 10, 10)).build();
         layout.setConstraints(this.titleInput, titleConstraints);
         panel.add(this.titleInput);
 
